@@ -246,7 +246,7 @@ def translate_text(text, source, target):
 # -----------------------------
 def load_qa_data(path: str = "qa_data.json"):
     """
-    qa_data.json 파일에서 질문/답변 데이터를 읽어옵니다.
+    # qa_data.json 파일에서 질문/답변 데이터를 읽어옵니다.
     형식은 {"영어 질문": "한국어 답변"} 딕셔너리라고 가정합니다.
     """
     try:
@@ -357,6 +357,7 @@ def index():
 # -----------------------------
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
+
 
 
 
