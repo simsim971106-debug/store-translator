@@ -9,31 +9,36 @@ app = Flask(__name__)
 # -----------------------------
 # 1. 구글 번역 API 설정
 # -----------------------------
+GOOGLE_API_KEY = os.environ.get("GOOGLE_API_KEY")
 import requests
 
 TRANSLATE_URL = "https://translation.googleapis.com/language/translate/v2"
-GOOGLE_API_KEY = "AIzaSyDHYamJ_MJlZekc4qIi8KhheMLWjSO01F8"
+GOOGLE_API_KEY = "여기에_실제_API_키_그대로_붙여넣기"  # AIza... 로 시작하는 키
 
 def translate_text(text: str, target_lang: str) -> tuple[str, str]:
+    print("🔑 GOOGLE_API_KEY 존재 여부:", bool(GOOGLE_API_KEY))
+
     """
     text → target_lang 으로 번역
     실패하면 그냥 원문을 돌려줍니다.
     """
     if not GOOGLE_API_KEY:
+        print("⚠ GOOGLE_API_KEY가 설정되어 있지 않습니다.")
         return "auto", text
 
     params = {
-        "key": GOOGLE_API_KEY,
-        "q": text,
-        "target": target_lang,
-        "format": "text",
-        "source": "auto",
+@@ -29,23 +31,17 @@
     }
 
     try:
+        resp = requests.post(TRANSLATE_URL, data=params, timeout=10)
+        print("🌐 번역 API status code:", resp.status_code)
+        print("🌐 번역 API raw response:", resp.text[:500])  # 앞 500자만
         resp = requests.get(TRANSLATE_URL, params=params, timeout=10)
         resp.raise_for_status()
     except Exception as e:
+        print("❌ 번역 API 호출 중 오류:", e)
+        # 여기서 그냥 에러만 보고, 서비스는 죽지 않게 원문 반환
         print("번역 API 오류:", e, resp.text if 'resp' in locals() else "")
         return "auto", text
 
@@ -42,6 +47,8 @@ def translate_text(text: str, target_lang: str) -> tuple[str, str]:
     translated_text = translations["translatedText"]
     detected_lang = translations.get("detectedSourceLanguage", "auto")
     return detected_lang, translated_text
+
+
 # -----------------------------
 # 2. qa_data.json 로딩
 # -----------------------------
@@ -387,6 +394,7 @@ def index():
 # -----------------------------
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
+
 
 
 
