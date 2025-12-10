@@ -14,13 +14,8 @@ GOOGLE_API_KEY = os.environ.get("GOOGLE_API_KEY")
 TRANSLATE_URL = "https://translation.googleapis.com/language/translate/v2"
 
 def translate_text(text: str, target_lang: str) -> tuple[str, str]:
-    """
-    구글 번역 API를 사용해 text를 target_lang으로 번역합니다.
-    (source 언어는 auto로 감지)
-    return: (감지된 언어 코드, 번역된 문장)
-    """
+    print("🔑 GOOGLE_API_KEY 존재 여부:", bool(GOOGLE_API_KEY))
     if not GOOGLE_API_KEY:
-        # API 키가 없으면 그냥 원문을 그대로 돌려줌
         return "auto", text
 
     params = {
@@ -385,6 +380,7 @@ def index():
 # -----------------------------
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
+
 
 
 
