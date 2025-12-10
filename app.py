@@ -12,7 +12,7 @@ app = Flask(__name__)
 import requests
 
 TRANSLATE_URL = "https://translation.googleapis.com/language/translate/v2"
-GOOGLE_API_KEY = "여기에_실제_API_키_그대로_붙여넣기"  # AIza... 로 시작하는 키
+GOOGLE_API_KEY = "AIzaSyDHYamJ_MJlZekc4qIi8KhheMLWjSO01F8"
 
 def translate_text(text: str, target_lang: str) -> tuple[str, str]:
     """
@@ -387,6 +387,7 @@ def index():
 # -----------------------------
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
+
 
 
 
