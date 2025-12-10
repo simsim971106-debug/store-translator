@@ -1,16 +1,99 @@
-from flask import Flask, request, render_template_string
-import requests
-import difflib
+import os
 import json
+import difflib
+import requests
+from flask import Flask, request, render_template_string
 
 app = Flask(__name__)
 
-# 🔑 여기에 본인 Google Cloud Translation API 키 넣으세요
-GOOGLE_API_KEY = "AIzaSyCye5tUgesxDOqqCKQLZl2ocecyeHnHrNU"
+# -----------------------------
+# 1. 구글 번역 API 설정
+# -----------------------------
+GOOGLE_API_KEY = os.environ.get("AIzaSyCye5tUgesxDOqqCKQLZl2ocecyeHnHrNU")
+
 TRANSLATE_URL = "https://translation.googleapis.com/language/translate/v2"
 
+
+def translate_text(text: str, target_lang: str) -> tuple[str, str]:
+    """
+    구글 번역 API를 사용해 text를 target_lang으로 번역합니다.
+    (source 언어는 auto로 감지)
+    return: (감지된 언어 코드, 번역된 문장)
+    """
+    if not GOOGLE_API_KEY:
+        # API 키가 없으면 그냥 원문을 그대로 돌려줌
+        return "auto", text
+
+    params = {
+        "key": GOOGLE_API_KEY,
+        "q": text,
+        "target": target_lang,
+        "format": "text",
+        "source": "auto",
+    }
+    resp = requests.post(TRANSLATE_URL, data=params, timeout=10)
+    resp.raise_for_status()
+    data = resp.json()
+
+    translations = data["data"]["translations"][0]
+    translated_text = translations["translatedText"]
+    detected_lang = translations.get("detectedSourceLanguage", "auto")
+    return detected_lang, translated_text
+
+
 # -----------------------------
-# 1. 언어별 UI 문구 정의
+# 2. qa_data.json 로딩
+# -----------------------------
+def load_qa_data(path: str = "qa_data.json") -> dict:
+    """qa_data.json에서 질문/답변 데이터를 읽어옵니다."""
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        if not isinstance(data, dict):
+            raise ValueError("qa_data.json must contain a JSON object {question: answer}")
+        return data
+    except FileNotFoundError:
+        print("qa_data.json 파일을 찾을 수 없습니다. 빈 데이터로 시작합니다.")
+        return {}
+    except Exception as e:
+        print(f"qa_data.json을 불러오는 중 오류가 발생했습니다: {e}")
+        return {}
+
+
+QA_DATA = load_qa_data()
+
+
+def find_best_answer(question_en: str) -> tuple[str | None, str | None]:
+    """
+    영어로 된 질문(question_en)과 qa_data.json의 키들을 비교해서
+    가장 비슷한 질문과 그에 해당하는 답변(한국어)을 반환합니다.
+    """
+    if not QA_DATA:
+        return None, None
+
+    # 소문자 변환 후 매칭
+    q_norm = question_en.strip().lower()
+    candidates = list(QA_DATA.keys())
+    norm_map = {k.lower(): k for k in candidates}
+
+    # 가장 비슷한 키 찾기
+    best = difflib.get_close_matches(q_norm, norm_map.keys(), n=1)
+    if not best:
+        return None, None
+
+    best_norm = best[0]
+    best_key = norm_map[best_norm]
+
+    # 유사도 점수 체크 (너무 다르면 None)
+    score = difflib.SequenceMatcher(None, q_norm, best_norm).ratio()
+    if score < 0.45:  # 필요하면 이 값 조정
+        return None, None
+
+    return best_key, QA_DATA.get(best_key)
+
+
+# -----------------------------
+# 3. UI 텍스트 (언어별)
 # -----------------------------
 UI_TEXTS = {
     "en": {
@@ -22,7 +105,7 @@ UI_TEXTS = {
         "result_title": "Result",
         "result_question": "Customer question:",
         "result_answer": "Answer:",
-        "menu_image_title": "Menu image"
+        "menu_image_title": "Menu image",
     },
     "ja": {
         "title": "翻訳サポート（デモ）",
@@ -33,7 +116,7 @@ UI_TEXTS = {
         "result_title": "結果",
         "result_question": "お客様の質問：",
         "result_answer": "回答：",
-        "menu_image_title": "メニュー画像"
+        "menu_image_title": "メニュー画像",
     },
     "zh": {
         "title": "店铺翻译助手（演示）",
@@ -44,7 +127,7 @@ UI_TEXTS = {
         "result_title": "结果",
         "result_question": "顾客的问题：",
         "result_answer": "回答：",
-        "menu_image_title": "菜单图片"
+        "menu_image_title": "菜单图片",
     },
     "ko": {
         "title": "가게 번역 도우미 (시제품)",
@@ -55,12 +138,29 @@ UI_TEXTS = {
         "result_title": "결과",
         "result_question": "손님 질문:",
         "result_answer": "답변:",
-        "menu_image_title": "메뉴판 이미지"
+        "menu_image_title": "메뉴판 이미지",
     },
 }
 
+
 # -----------------------------
-# 2. HTML 템플릿 (UI 문구는 texts에서 가져옴)
+# 4. 언어별 메뉴판 이미지 경로
+# -----------------------------
+def get_menu_image_for_lang(lang: str) -> str | None:
+    """
+    손님 언어에 따라 static 폴더의 메뉴판 이미지 경로를 반환합니다.
+    """
+    mapping = {
+        "en": "/static/menu_en.jpg",
+        "ja": "/static/menu_ja.jpg",
+        "zh": "/static/menu_zh.jpg",
+        "ko": "/static/menu_ko.jpg",
+    }
+    return mapping.get(lang)
+
+
+# -----------------------------
+# 5. HTML 템플릿
 # -----------------------------
 HTML_PAGE = """
 <!doctype html>
@@ -215,93 +315,21 @@ HTML_PAGE = """
 </html>
 """
 
-"""
 
 # -----------------------------
-# 3. Google 번역 함수 (언어 자동 감지)
-# -----------------------------
-def translate_text(text, source, target):
-    if not text:
-        return ""
-
-    # 👉 source는 보내지 않고, Google에 자동 감지를 맡깁니다.
-    params = {
-        "key": GOOGLE_API_KEY,
-        "q": text,
-        "target": target,
-        "format": "text",
-    }
-
-    resp = requests.post(TRANSLATE_URL, params=params)
-    data = resp.json()
-
-    try:
-        return data["data"]["translations"][0]["translatedText"]
-    except Exception:
-        print("번역 API 오류 응답:", data)
-        return "(번역 오류가 발생했습니다.)"
-
-# -----------------------------
-# 4. 미리 등록해 둔 Q&A (영어 질문 → 한국어 답변)
-# -----------------------------
-def load_qa_data(path: str = "qa_data.json"):
-    """
-    # qa_data.json 파일에서 질문/답변 데이터를 읽어옵니다.
-    형식은 {"영어 질문": "한국어 답변"} 딕셔너리라고 가정합니다.
-    """
-    try:
-        with open(path, encoding="utf-8") as f:
-            data = json.load(f)
-        return data
-    except FileNotFoundError:
-        print(f"[경고] {path} 파일을 찾을 수 없습니다. 빈 데이터로 시작합니다.")
-        return {}
-    except Exception as e:
-        print(f"[경고] {path} 파일 읽기 오류: {e}")
-        return {}
-
-QA_DATA = load_qa_data()
-QA_KEYS = list(QA_DATA.keys())
-
-def find_best_answer(english_question: str, cutoff: float = 0.6):
-    """영어 질문과 가장 비슷한 등록 질문을 찾아, 유사도가 cutoff 이상이면 한국어 답변을 반환"""
-    if not english_question:
-        return None
-    normalized = english_question.strip().lower()
-    if not normalized:
-        return None
-
-    matches = difflib.get_close_matches(normalized, QA_KEYS, n=1, cutoff=cutoff)
-    if matches:
-        key = matches[0]
-        return QA_DATA[key]
-    return None
-
-def get_menu_image_for_lang(lang: str):
-    mapping = {
-        "en": "/static/menu_en.jpg",
-        "zh": "/static/menu_zh.jpg",
-        "ja": "/static/menu_ja.jpg",
-        "ko": "/static/menu_ko.jpg",
-    }
-    return mapping.get(lang)
-
-
-# -----------------------------
-# 5. 메인 라우트
+# 6. 라우팅
 # -----------------------------
 @app.route("/", methods=["GET", "POST"])
 def index():
     if request.method == "POST":
-        # 손님 언어 (UI에서 선택한 값)
         source_lang = request.form.get("source_lang", "en")
         raw_text = (request.form.get("text") or "").strip()
 
         texts = UI_TEXTS.get(source_lang, UI_TEXTS["en"])
         menu_image = get_menu_image_for_lang(source_lang)
 
-        # 질문이 비어 있으면 그냥 화면만 다시 보여주기
-        if not raw_text:
+        # 언어만 바꿔서 다시 로드하는 경우 (질문 없이 submit)
+        if "lang-form" in request.form or not raw_text:
             return render_template_string(
                 HTML_PAGE,
                 original_text="",
@@ -313,12 +341,12 @@ def index():
 
         # 1) 손님 질문을 영어로 번역
         try:
-            detected_lang, text_in_en = translate_text(raw_text, "en")
+            _, text_in_en = translate_text(raw_text, "en")
         except Exception:
-            detected_lang, text_in_en = "auto", raw_text
+            text_in_en = raw_text
 
         # 2) 가장 비슷한 질문/답변 찾기
-        best_q, best_answer_ko = find_best_answer(text_in_en)
+        _, best_answer_ko = find_best_answer(text_in_en)
 
         if best_answer_ko is None:
             answer_in_source = "(준비된 답변이 없습니다.)"
@@ -327,7 +355,6 @@ def index():
             try:
                 _, answer_in_source = translate_text(best_answer_ko, source_lang)
             except Exception:
-                # 번역 실패하면 한국어 원문이라도 보여주기
                 answer_in_source = best_answer_ko
 
         return render_template_string(
@@ -339,7 +366,7 @@ def index():
             menu_image=menu_image,
         )
 
-    # GET 요청 (첫 접속 화면)
+    # GET: 첫 화면
     default_lang = "en"
     texts = UI_TEXTS[default_lang]
     menu_image = get_menu_image_for_lang(default_lang)
@@ -352,13 +379,13 @@ def index():
         current_lang=default_lang,
         menu_image=menu_image,
     )
+
+
 # -----------------------------
-# 6. 로컬 실행용 (Render에서는 gunicorn app:app 사용)
+# 7. 로컬 실행용
 # -----------------------------
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
-
-
 
 
 
