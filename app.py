@@ -15,7 +15,9 @@ TRANSLATE_URL = "https://translation.googleapis.com/language/translate/v2"
 
 def translate_text(text: str, target_lang: str) -> tuple[str, str]:
     print("🔑 GOOGLE_API_KEY 존재 여부:", bool(GOOGLE_API_KEY))
+
     if not GOOGLE_API_KEY:
+        print("⚠ GOOGLE_API_KEY가 설정되어 있지 않습니다.")
         return "auto", text
 
     params = {
@@ -25,14 +27,23 @@ def translate_text(text: str, target_lang: str) -> tuple[str, str]:
         "format": "text",
         "source": "auto",
     }
-    resp = requests.post(TRANSLATE_URL, data=params, timeout=10)
-    resp.raise_for_status()
-    data = resp.json()
 
+    try:
+        resp = requests.post(TRANSLATE_URL, data=params, timeout=10)
+        print("🌐 번역 API status code:", resp.status_code)
+        print("🌐 번역 API raw response:", resp.text[:500])  # 앞 500자만
+        resp.raise_for_status()
+    except Exception as e:
+        print("❌ 번역 API 호출 중 오류:", e)
+        # 여기서 그냥 에러만 보고, 서비스는 죽지 않게 원문 반환
+        return "auto", text
+
+    data = resp.json()
     translations = data["data"]["translations"][0]
     translated_text = translations["translatedText"]
     detected_lang = translations.get("detectedSourceLanguage", "auto")
     return detected_lang, translated_text
+
 
 
 # -----------------------------
@@ -380,6 +391,7 @@ def index():
 # -----------------------------
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
+
 
 
 
