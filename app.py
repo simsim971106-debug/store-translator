@@ -42,21 +42,25 @@ HTML_PAGE = """
 """
 
 def translate_text(text, source, target):
-  if not text:
-    return ""
-  params = {
-    "key": GOOGLE_API_KEY,
-    "q": text,
-    "source": source,
-    "target": target,
-    "format": "text",
-  }
-  resp = requests.post(TRANSLATE_URL, params=params)
-  data = resp.json()
-  try:
-    return data["data"]["translations"][0]["translatedText"]
-  except Exception:
-    return "(번역 오류가 발생했습니다.)"
+    if not text:
+        return ""
+
+    # ✅ source를 아예 보내지 않고, Google이 자동으로 언어 감지하게 만듭니다
+    params = {
+        "key": GOOGLE_API_KEY,
+        "q": text,
+        "target": target,
+        "format": "text",
+    }
+
+    resp = requests.post(TRANSLATE_URL, params=params)
+    data = resp.json()
+
+    try:
+        return data["data"]["translations"][0]["translatedText"]
+    except Exception:
+        print("번역 API 오류 응답:", data)  # Render 로그에서 확인용
+        return "(번역 오류가 발생했습니다.)"
 
 QA_DATA = {
   "where is the toilet?": "화장실은 가게 밖으로 나가셔서 오른쪽으로 가시면 있습니다. 비밀번호는 7624입니다.",
@@ -112,3 +116,4 @@ def index():
 if __name__ == "__main__":
 
   app.run(host="0.0.0.0", port=5000)
+
