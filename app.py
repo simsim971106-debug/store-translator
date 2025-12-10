@@ -22,6 +22,7 @@ UI_TEXTS = {
         "result_title": "Result",
         "result_question": "Customer question:",
         "result_answer": "Answer:",
+        "menu_image_title": "Menu image"
     },
     "ja": {
         "title": "翻訳サポート（デモ）",
@@ -32,6 +33,7 @@ UI_TEXTS = {
         "result_title": "結果",
         "result_question": "お客様の質問：",
         "result_answer": "回答：",
+        "menu_image_title": "メニュー画像"
     },
     "zh": {
         "title": "店铺翻译助手（演示）",
@@ -42,6 +44,7 @@ UI_TEXTS = {
         "result_title": "结果",
         "result_question": "顾客的问题：",
         "result_answer": "回答：",
+        "menu_image_title": "菜单图片"
     },
     "ko": {
         "title": "가게 번역 도우미 (시제품)",
@@ -52,6 +55,7 @@ UI_TEXTS = {
         "result_title": "결과",
         "result_question": "손님 질문:",
         "result_answer": "답변:",
+        "menu_image_title": "메뉴판 이미지"
     },
 }
 
@@ -87,6 +91,12 @@ HTML_PAGE = """
     <h2>{{ texts.result_title }}</h2>
     <p><b>{{ texts.result_question }}</b> {{ original_text }}</p>
     <p><b>{{ texts.result_answer }}</b> {{ answer_in_source }}</p>
+  {% endif %}
+
+  {% if menu_image %}
+    <hr>
+    <h2>{{ texts.menu_image_title }}</h2>
+    <img src="{{ menu_image }}" alt="Menu image" style="max-width: 100%; height: auto;">
   {% endif %}
 </body>
 </html>
@@ -152,6 +162,19 @@ def find_best_answer(english_question: str, cutoff: float = 0.6):
         return QA_DATA[key]
     return None
 
+def get_menu_image_for_lang(lang: str) -> str | None:
+    """
+    손님 언어 코드에 따라 보여줄 메뉴판 이미지 경로를 반환합니다.
+    static 폴더 안의 파일명을 미리 정해 둡니다.
+    """
+    mapping = {
+        "en": "/static/menu_en.jpg",
+        "zh": "/static/menu_zh.jpg",
+        "ja": "/static/menu_ja.jpg",
+        "ko": "/static/menu_ko.jpg"
+    }
+    return mapping.get(lang)
+
 # -----------------------------
 # 5. 메인 라우트
 # -----------------------------
@@ -176,7 +199,9 @@ def index():
         answer_in_source = translate_text(answer_ko, "ko", source_lang)
 
         # 4) UI 문구도 손님이 선택한 언어에 맞추기
-        texts = UI_TEXTS.get(source_lang, UI_TEXTS["en"])
+          texts = UI_TEXTS.get(source_lang, UI_TEXTS["en"])
+        menu_image = get_menu_image_for_lang(source_lang)  # ✅ 추가
+
 
         return render_template_string(
             HTML_PAGE,
@@ -184,17 +209,20 @@ def index():
             answer_in_source=answer_in_source,
             texts=texts,
             current_lang=source_lang,
+            menu_image=menu_image,  # ✅ 추가
         )
 
     # GET 요청일 때: 기본 언어는 영어 UI
-    default_lang = "en"
+   default_lang = "en"
     texts = UI_TEXTS[default_lang]
+    menu_image = get_menu_image_for_lang(default_lang)  # ✅ 추가
     return render_template_string(
         HTML_PAGE,
         original_text=None,
         answer_in_source=None,
         texts=texts,
         current_lang=default_lang,
+        menu_image=menu_image,  # ✅ 추가
     )
 
 # -----------------------------
@@ -202,4 +230,5 @@ def index():
 # -----------------------------
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
+
 
