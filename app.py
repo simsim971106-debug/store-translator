@@ -1,6 +1,7 @@
 from flask import Flask, request, render_template_string
 import requests
 import difflib
+import json
 
 app = Flask(__name__)
 
@@ -118,13 +119,23 @@ def translate_text(text, source, target):
 # -----------------------------
 # 4. 미리 등록해 둔 Q&A (영어 질문 → 한국어 답변)
 # -----------------------------
-QA_DATA = {
-    "where is the toilet?": "화장실은 가게 밖으로 나가셔서 오른쪽으로 가시면 있습니다. 비밀번호는 7624입니다.",
-    "do you have wifi?": "와이파이는 무료이며, 아이디는 CAFE123이고 비밀번호는 12345678입니다.",
-    "is there any peanut in this dish?": "이 음식에는 땅콩이 들어가지 않았습니다. 알레르기 걱정 없이 드셔도 됩니다.",
-    "what time do you close?": "저희 매장은 오늘 밤 10시에 마감합니다.",
-    "can i take out?": "네, 포장 가능합니다. 원하시는 메뉴를 말씀해 주세요.",
-}
+def load_qa_data(path: str = "qa_data.json"):
+    """
+    qa_data.json 파일에서 질문/답변 데이터를 읽어옵니다.
+    형식은 {"영어 질문": "한국어 답변"} 딕셔너리라고 가정합니다.
+    """
+    try:
+        with open(path, encoding="utf-8") as f:
+            data = json.load(f)
+        return data
+    except FileNotFoundError:
+        print(f"[경고] {path} 파일을 찾을 수 없습니다. 빈 데이터로 시작합니다.")
+        return {}
+    except Exception as e:
+        print(f"[경고] {path} 파일 읽기 오류: {e}")
+        return {}
+
+QA_DATA = load_qa_data()
 QA_KEYS = list(QA_DATA.keys())
 
 def find_best_answer(english_question: str, cutoff: float = 0.6):
@@ -191,3 +202,4 @@ def index():
 # -----------------------------
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
+
