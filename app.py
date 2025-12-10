@@ -64,42 +64,157 @@ UI_TEXTS = {
 # -----------------------------
 HTML_PAGE = """
 <!doctype html>
-<html>
+<html lang="ko">
 <head>
-  <meta charset="utf-8">
-  <title>{{ texts.title }}</title>
+    <meta charset="utf-8">
+    <title>{{ texts.title }}</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: #f5f5f5;
+            margin: 0;
+            padding: 0;
+        }
+        .page {
+            max-width: 900px;
+            margin: 30px auto;
+            padding: 0 16px;
+        }
+        .card {
+            background: #ffffff;
+            border-radius: 10px;
+            padding: 20px 24px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+        }
+        h1 {
+            margin: 0 0 10px;
+            font-size: 32px;
+            color: #222;
+        }
+        h2 {
+            margin-top: 0;
+            font-size: 20px;
+            color: #333;
+        }
+        label {
+            font-weight: 600;
+            color: #444;
+        }
+        select, textarea, button {
+            font-family: inherit;
+            font-size: 14px;
+        }
+        select, textarea {
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            padding: 8px 10px;
+            box-sizing: border-box;
+        }
+        textarea {
+            width: 100%;
+            min-height: 100px;
+            resize: vertical;
+            margin-top: 6px;
+        }
+        button {
+            margin-top: 12px;
+            padding: 8px 18px;
+            border: none;
+            border-radius: 999px;
+            background: #ff7f50;
+            color: #ffffff;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #ff6a33;
+        }
+        .field-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .field-row select {
+            width: auto;
+            min-width: 160px;
+        }
+        .menu-image {
+            margin-top: 14px;
+        }
+        .menu-image img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            border: 1px solid #eee;
+        }
+        .result-label {
+            font-weight: 700;
+        }
+        .result-block p {
+            margin: 4px 0 8px;
+        }
+    </style>
 </head>
 <body>
-  <h1>{{ texts.heading }}</h1>
-  <form method="POST">
-    <label>{{ texts.label_guest_lang }}</label>
-    <select name="source_lang">
-      <option value="en" {% if current_lang == 'en' %}selected{% endif %}>English</option>
-      <option value="ja" {% if current_lang == 'ja' %}selected{% endif %}>日本語</option>
-      <option value="zh" {% if current_lang == 'zh' %}selected{% endif %}>中文</option>
-      <option value="ko" {% if current_lang == 'ko' %}selected{% endif %}>한국어</option>
-    </select>
-    <br><br>
-    <label>{{ texts.label_question }}</label><br>
-    <textarea name="text" rows="4" cols="40"></textarea>
-    <br><br>
-    <button type="submit">{{ texts.button_submit }}</button>
-  </form>
+<div class="page">
 
-  {% if original_text %}
-    <hr>
-    <h2>{{ texts.result_title }}</h2>
-    <p><b>{{ texts.result_question }}</b> {{ original_text }}</p>
-    <p><b>{{ texts.result_answer }}</b> {{ answer_in_source }}</p>
-  {% endif %}
+    <!-- 상단: 제목 + 언어 선택 + 메뉴판 이미지 -->
+    <div class="card">
+        <h1>{{ texts.heading }}</h1>
 
-  {% if menu_image %}
-    <hr>
-    <h2>{{ texts.menu_image_title }}</h2>
-    <img src="{{ menu_image }}" alt="Menu image" style="max-width: 100%; height: auto;">
-  {% endif %}
+        <div class="field-row" style="margin-bottom: 8px;">
+            <label for="source_lang">{{ texts.label_guest_lang }}</label>
+            <!-- 언어만 바꾸는 작은 폼 -->
+            <form method="post" id="lang-form">
+                <select name="source_lang" id="source_lang"
+                        onchange="document.getElementById('lang-form').submit();">
+                    <option value="en" {% if current_lang == 'en' %}selected{% endif %}>English</option>
+                    <option value="ja" {% if current_lang == 'ja' %}selected{% endif %}>日本語</option>
+                    <option value="zh" {% if current_lang == 'zh' %}selected{% endif %}>中文</option>
+                    <option value="ko" {% if current_lang == 'ko' %}selected{% endif %}>한국어</option>
+                </select>
+            </form>
+        </div>
+
+        {% if menu_image %}
+        <div class="menu-image">
+            <h2 style="margin-bottom: 6px;">{{ texts.menu_image_title }}</h2>
+            <img src="{{ menu_image }}" alt="Menu image">
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- 질문 입력 카드 -->
+    <div class="card">
+        <form method="post">
+            <!-- 질문 보낼 때도 현재 언어 값을 같이 보냄 -->
+            <input type="hidden" name="source_lang" value="{{ current_lang }}">
+            <label for="text">{{ texts.label_question }}</label>
+            <textarea name="text" id="text">{{ original_text or '' }}</textarea>
+            <button type="submit">{{ texts.button_submit }}</button>
+        </form>
+    </div>
+
+    <!-- 결과 카드 -->
+    {% if original_text is not none %}
+    <div class="card result-block">
+        <h2>{{ texts.result_title }}</h2>
+        {% if original_text %}
+            <p><span class="result-label">{{ texts.result_question }}</span> {{ original_text }}</p>
+            <p><span class="result-label">{{ texts.result_answer }}</span> {{ answer_in_source }}</p>
+        {% else %}
+            <p>{{ texts.result_question }} (질문이 입력되지 않았습니다.)</p>
+        {% endif %}
+    </div>
+    {% endif %}
+
+</div>
 </body>
 </html>
+"""
+
 """
 
 # -----------------------------
@@ -242,6 +357,7 @@ def index():
 # -----------------------------
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
+
 
 
 
