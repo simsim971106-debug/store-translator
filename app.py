@@ -82,28 +82,33 @@ def find_best_answer(english_question: str, cutoff: float = 0.6):
 
 @app.route("/", methods=["GET", "POST"])
 def index():
-  if request.method == "POST":
-    source_lang = request.form.get("source_lang", "en")
-    raw_text = request.form.get("text", "")
+    if request.method == "POST":
+        source_lang = request.form.get("source_lang", "en")
+        raw_text = request.form.get("text", "")
 
-    if source_lang == "en":
-      english_for_match = raw_text
-    else:
-      english_for_match = translate_text(raw_text, source_lang, "en")
+        # ✅ 모든 언어를 무조건 영어로 통일해서 비교
+        if source_lang == "en":
+            english_for_match = raw_text
+        else:
+            english_for_match = translate_text(raw_text, source_lang, "en")
 
-    answer_ko = find_best_answer(english_for_match, cutoff=0.6)
-    if answer_ko is None:
-      answer_ko = "죄송하지만 아직 이 질문에 대한 준비된 답변이 없습니다. 직원에게 직접 문의 부탁드립니다."
+        # ✅ 영어 기준으로 가장 비슷한 질문 찾기
+        answer_ko = find_best_answer(english_for_match, cutoff=0.6)
 
-    answer_in_source = translate_text(answer_ko, "ko", source_lang)
+        if answer_ko is None:
+            answer_ko = "죄송하지만 아직 이 질문에 대한 준비된 답변이 없습니다. 직원에게 직접 문의 부탁드립니다."
 
-    return render_template_string(
-      HTML_PAGE,
-      original_text=raw_text,
-      answer_in_source=answer_in_source,
-    )
+        # ✅ 한국어 답변을 다시 손님 언어로 번역
+        answer_in_source = translate_text(answer_ko, "ko", source_lang)
 
-  return render_template_string(HTML_PAGE)
+        return render_template_string(
+            HTML_PAGE,
+            original_text=raw_text,
+            answer_in_source=answer_in_source,
+        )
+
+    return render_template_string(HTML_PAGE)
 
 if __name__ == "__main__":
+
   app.run(host="0.0.0.0", port=5000)
