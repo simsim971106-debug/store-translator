@@ -162,18 +162,15 @@ def find_best_answer(english_question: str, cutoff: float = 0.6):
         return QA_DATA[key]
     return None
 
-def get_menu_image_for_lang(lang: str) -> str | None:
-    """
-    손님 언어 코드에 따라 보여줄 메뉴판 이미지 경로를 반환합니다.
-    static 폴더 안의 파일명을 미리 정해 둡니다.
-    """
+def get_menu_image_for_lang(lang: str):
     mapping = {
         "en": "/static/menu_en.jpg",
         "zh": "/static/menu_zh.jpg",
         "ja": "/static/menu_ja.jpg",
-        "ko": "/static/menu_ko.jpg"
+        "ko": "/static/menu_ko.jpg",
     }
     return mapping.get(lang)
+
 
 # -----------------------------
 # 5. 메인 라우트
@@ -181,27 +178,42 @@ def get_menu_image_for_lang(lang: str) -> str | None:
 @app.route("/", methods=["GET", "POST"])
 def index():
     if request.method == "POST":
+        # 손님 언어 (UI에서 선택한 값)
         source_lang = request.form.get("source_lang", "en")
-        raw_text = request.form.get("text", "")
+        raw_text = (request.form.get("text") or "").strip()
 
-        # 1) 손님 질문을 영어로 통일 (이미 영어면 그대로)
-        if source_lang == "en":
-            english_for_match = raw_text
+        texts = UI_TEXTS.get(source_lang, UI_TEXTS["en"])
+        menu_image = get_menu_image_for_lang(source_lang)
+
+        # 질문이 비어 있으면 그냥 화면만 다시 보여주기
+        if not raw_text:
+            return render_template_string(
+                HTML_PAGE,
+                original_text="",
+                answer_in_source="",
+                texts=texts,
+                current_lang=source_lang,
+                menu_image=menu_image,
+            )
+
+        # 1) 손님 질문을 영어로 번역
+        try:
+            detected_lang, text_in_en = translate_text(raw_text, "en")
+        except Exception:
+            detected_lang, text_in_en = "auto", raw_text
+
+        # 2) 가장 비슷한 질문/답변 찾기
+        best_q, best_answer_ko = find_best_answer(text_in_en)
+
+        if best_answer_ko is None:
+            answer_in_source = "(준비된 답변이 없습니다.)"
         else:
-            english_for_match = translate_text(raw_text, source_lang, "en")
-
-        # 2) 비슷한 질문 찾기
-        answer_ko = find_best_answer(english_for_match, cutoff=0.6)
-        if answer_ko is None:
-            answer_ko = "죄송하지만 아직 이 질문에 대한 준비된 답변이 없습니다. 직원에게 직접 문의 부탁드립니다."
-
-        # 3) 한국어 답변을 손님 언어로 번역
-        answer_in_source = translate_text(answer_ko, "ko", source_lang)
-
-        # 4) UI 문구도 손님이 선택한 언어에 맞추기
-          texts = UI_TEXTS.get(source_lang, UI_TEXTS["en"])
-        menu_image = get_menu_image_for_lang(source_lang)  # ✅ 추가
-
+            # 3) 한국어 답변을 손님 언어로 다시 번역
+            try:
+                _, answer_in_source = translate_text(best_answer_ko, source_lang)
+            except Exception:
+                # 번역 실패하면 한국어 원문이라도 보여주기
+                answer_in_source = best_answer_ko
 
         return render_template_string(
             HTML_PAGE,
@@ -209,26 +221,27 @@ def index():
             answer_in_source=answer_in_source,
             texts=texts,
             current_lang=source_lang,
-            menu_image=menu_image,  # ✅ 추가
+            menu_image=menu_image,
         )
 
-    # GET 요청일 때: 기본 언어는 영어 UI
-   default_lang = "en"
+    # GET 요청 (첫 접속 화면)
+    default_lang = "en"
     texts = UI_TEXTS[default_lang]
-    menu_image = get_menu_image_for_lang(default_lang)  # ✅ 추가
+    menu_image = get_menu_image_for_lang(default_lang)
+
     return render_template_string(
         HTML_PAGE,
         original_text=None,
         answer_in_source=None,
         texts=texts,
         current_lang=default_lang,
-        menu_image=menu_image,  # ✅ 추가
+        menu_image=menu_image,
     )
-
 # -----------------------------
 # 6. 로컬 실행용 (Render에서는 gunicorn app:app 사용)
 # -----------------------------
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
+
 
 
