@@ -334,11 +334,11 @@ def index():
         menu_image = get_menu_image_for_lang(source_lang)
 
         # 언어만 바꿔서 다시 로드하는 경우 (질문 없이 submit)
-        if "lang-form" in request.form or not raw_text:
+        if not raw_text:
             return render_template_string(
                 HTML_PAGE,
-                original_text="",
-                answer_in_source="",
+                original_text="None",
+                answer_in_source="None",
                 texts=texts,
                 current_lang=source_lang,
                 menu_image=menu_image,
@@ -391,6 +391,7 @@ def index():
 # -----------------------------
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
+
 
 
 
