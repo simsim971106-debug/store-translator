@@ -9,7 +9,7 @@ app = Flask(__name__)
 # -----------------------------
 # 1. 구글 번역 API 설정
 # -----------------------------
-GOOGLE_API_KEY = os.environ.get("AIzaSyCye5tUgesxDOqqCKQLZl2ocecyeHnHrNU")
+GOOGLE_API_KEY = "AIzaSyACB4g9KPdDMT2JIp0AiLZ1wGXvIhSLohI"
 
 TRANSLATE_URL = "https://translation.googleapis.com/language/translate/v2"
 
@@ -386,6 +386,7 @@ def index():
 # -----------------------------
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
+
 
 
 
