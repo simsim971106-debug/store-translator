@@ -341,12 +341,12 @@ def index():
         texts = UI_TEXTS.get(source_lang, UI_TEXTS["en"])
         menu_image = get_menu_image_for_lang(source_lang)
 
-        # 언어만 바꿔서 다시 로드하는 경우 (질문 없이 submit)
+        # 질문이 비어 있으면 결과 카드는 안 보이게 처리
         if not raw_text:
             return render_template_string(
                 HTML_PAGE,
-                original_text="None",
-                answer_in_source="None",
+                original_text=None,
+                answer_in_source=None,
                 texts=texts,
                 current_lang=source_lang,
                 menu_image=menu_image,
@@ -362,7 +362,15 @@ def index():
         _, best_answer_ko = find_best_answer(text_in_en)
 
         if best_answer_ko is None:
-            answer_in_source = "(준비된 답변이 없습니다.)"
+            # ✅ 직원 문의 안내 문구 (한국어 기준)
+            fallback_ko = "지금은 해당 질문에 대한 답변을 준비하지 못했습니다. 직원에게 문의해 주세요."
+
+            # ✅ 이 문구를 손님 언어로 번역
+            try:
+                _, answer_in_source = translate_text(fallback_ko, source_lang)
+            except Exception:
+                # 번역 실패 시 한국어 문구라도 보여주기
+                answer_in_source = fallback_ko
         else:
             # 3) 한국어 답변을 손님 언어로 다시 번역
             try:
@@ -393,12 +401,12 @@ def index():
         menu_image=menu_image,
     )
 
-
 # -----------------------------
 # 7. 로컬 실행용
 # -----------------------------
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
+
 
 
 
