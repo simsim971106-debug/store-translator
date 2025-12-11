@@ -99,7 +99,7 @@ def find_best_answer(question_en: str) -> tuple[str | None, str | None]:
 
     # 유사도 점수 체크 (너무 다르면 None)
     score = difflib.SequenceMatcher(None, q_norm, best_norm).ratio()
-    if score < 0.45:  # 필요하면 이 값 조정
+    if score < 0.60:  # 필요하면 이 값 조정
         return None, None
 
     return best_key, QA_DATA.get(best_key)
@@ -405,6 +405,7 @@ def index():
 # -----------------------------
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
+
 
 
 
