@@ -286,7 +286,6 @@ HTML_PAGE = """
                     <option value="en" {% if current_lang == 'en' %}selected{% endif %}>English</option>
                     <option value="ja" {% if current_lang == 'ja' %}selected{% endif %}>日本語</option>
                     <option value="zh" {% if current_lang == 'zh' %}selected{% endif %}>中文</option>
-                    <option value="ko" {% if current_lang == 'ko' %}selected{% endif %}>한국어</option>
                 </select>
             </form>
         </div>
@@ -406,6 +405,7 @@ def index():
 # -----------------------------
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
+
 
 
 
