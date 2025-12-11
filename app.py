@@ -110,8 +110,8 @@ def find_best_answer(question_en: str) -> tuple[str | None, str | None]:
 # -----------------------------
 UI_TEXTS = {
     "en": {
-        "title": "Store Translation Helper (Demo)",
-        "heading": "Store Translation Helper (Demo)",
+        "title": "Store Translation Helper",
+        "heading": "Store Translation Helper",
         "label_guest_lang": "Customer language:",
         "label_question": "Please enter your question:",
         "button_submit": "Show answer",
@@ -121,8 +121,8 @@ UI_TEXTS = {
         "menu_image_title": "Menu image",
     },
     "ja": {
-        "title": "翻訳サポート（デモ）",
-        "heading": "翻訳サポート（デモ）",
+        "title": "翻訳サポート",
+        "heading": "翻訳サポート",
         "label_guest_lang": "お客様の言語：",
         "label_question": "質問を入力してください：",
         "button_submit": "回答を表示",
@@ -132,8 +132,8 @@ UI_TEXTS = {
         "menu_image_title": "メニュー画像",
     },
     "zh": {
-        "title": "店铺翻译助手（演示）",
-        "heading": "店铺翻译助手（演示）",
+        "title": "店铺翻译助手",
+        "heading": "店铺翻译助手",
         "label_guest_lang": "顾客使用的语言：",
         "label_question": "请输入您的问题：",
         "button_submit": "显示回答",
@@ -143,8 +143,8 @@ UI_TEXTS = {
         "menu_image_title": "菜单图片",
     },
     "ko": {
-        "title": "가게 번역 도우미 (시제품)",
-        "heading": "가게 번역 도우미 (시제품)",
+        "title": "가게 번역 도우미",
+        "heading": "가게 번역 도우미",
         "label_guest_lang": "손님 언어:",
         "label_question": "질문을 입력해주세요:",
         "button_submit": "답변 보기",
@@ -405,6 +405,7 @@ def index():
 # -----------------------------
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
+
 
 
 
