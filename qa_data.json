@@ -77,7 +77,58 @@
   "is this seat available?": "네, 현재 사용 가능하신 자리입니다.",
   "can we move to another table?": "네, 원하시는 자리로 이동하셔도 괜찮습니다.",
 
+  "how do i order?": "테이블에 앉으신 후 직원이 주문을 받으러 갑니다.",
+"do i order at the table?": "네, 테이블에서 주문하실 수 있습니다.",
+"do i order at the counter?": "아니요, 직원이 테이블로 와서 주문을 받습니다.",
+"is one dish required per person?": "1인 1메뉴 주문을 부탁드리고 있습니다.",
+"can dishes be shared?": "네, 메뉴를 나눠 드셔도 괜찮습니다.",
+"are side dishes included?": "네, 기본 반찬이 함께 제공됩니다.",
+"can i get more side dishes?": "네, 반찬은 무료로 추가 제공해 드립니다.",
+
+"can kimchi jjigae be less spicy?": "네, 김치찌개는 덜 맵게 조절해 드릴 수 있습니다.",
+"can spicy pork stir fry be less spicy?": "네, 제육볶음은 덜 맵게 조절해 드릴 수 있습니다.",
+"can dishes be made less salty?": "가능한 경우 덜 짜게 조리해 드릴 수 있습니다.",
+"are any dishes sweet?": "대부분의 메뉴는 단맛이 강하지 않습니다.",
+"are any dishes oily?": "기름지지 않은 메뉴도 준비되어 있습니다.",
+
+"do your dishes contain garlic?": "대부분의 한국 요리에는 마늘이 사용됩니다.",
+"do your dishes contain sesame oil?": "일부 메뉴에는 참기름이 사용됩니다.",
+"are your dishes halal?": "할랄 인증을 받은 음식은 아닙니다.",
+"is alcohol used in cooking?": "일부 양념에 소량의 알코올 성분이 포함될 수 있습니다.",
+
+"is rice included in the price?": "네, 밥이 포함된 가격입니다.",
+"can i order extra rice?": "네, 공기밥 추가 주문이 가능합니다.",
+"is there a minimum order amount?": "최소 주문 금액은 없습니다.",
+
+"what is your best menu?": "김치찌개와 제육볶음이 가장 대표적인 메뉴입니다.",
+"what is the most popular dish?": "김치찌개와 제육볶음이 가장 많이 주문됩니다.",
+"what do most customers order?": "대부분의 손님이 김치찌개나 제육볶음을 주문하십니다.",
+"what is the signature dish of this restaurant?": "이 매장의 대표 메뉴는 김치찌개입니다.",
+
+"what do you recommend for first time visitors?": "처음 방문하신 분께는 김치찌개를 추천드립니다.",
+"what do you recommend for people who cannot eat spicy food?": "매운 음식을 못 드시는 분께는 된장찌개나 고등어구이를 추천드립니다.",
+"what do you recommend for children?": "아이들과 함께 드시기에는 고등어구이와 된장찌개가 무난합니다.",
+"what do you recommend for one person?": "모든 메뉴는 1인분 주문이 가능하며 김치찌개가 특히 많이 선택됩니다.",
+
+"what is the spiciest dish?": "제육볶음이 가장 매운 편에 속합니다.",
+"what is a mildly spicy dish?": "김치찌개는 중간 정도의 매운맛입니다.",
+"what is a non spicy dish?": "된장찌개와 고등어구이는 매운맛이 없습니다.",
+
+"what can this service do?": "메뉴 안내, 알레르기 정보, 주문 및 매장 이용 안내를 도와드립니다.",
+"what kind of questions can i ask?": "메뉴, 맛, 알레르기, 결제, 영업시간 등 매장 관련 질문이 가능합니다.",
+"can you answer in multiple languages?": "네, 여러 언어로 질문하시면 해당 언어로 안내해 드립니다.",
+"are the answers written by staff?": "네, 사장님이 직접 작성한 정보를 기반으로 안내해 드립니다.",
+
+"is the allergy information guaranteed?": "알레르기 정보는 참고용이며 심한 알레르기가 있으신 경우 직원에게 직접 확인을 부탁드립니다.",
+"who is responsible for wrong information?": "모든 정보는 매장에서 제공한 내용을 기준으로 안내됩니다.",
+"can people with severe allergies eat here safely?": "심한 알레르기가 있으신 경우 직원에게 직접 확인 후 이용해 주시기를 권장드립니다.",
+
+"can you take my order?": "주문은 직원이 직접 도와드리고 있습니다.",
+"can you make a complaint?": "불편 사항은 직원에게 직접 말씀해 주시면 도움을 드리겠습니다.",
+"can you change the menu price?": "가격 변경은 매장에서 직접 안내해 드리고 있습니다.",
+
   "can i charge my phone here?": "네, 계산대 옆 콘센트를 이용하시면 됩니다.",
   "is smoking allowed?": "매장 내부는 금연이며 건물 밖 흡연 구역을 이용해 주셔야 합니다."
 }
+
 
